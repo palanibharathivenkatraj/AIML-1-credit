@@ -1,6 +1,6 @@
 const API_BASE = window.location.host.includes('localhost')
-  ? 'http://localhost:5000/api'
-  : 'https://aiml-1-credit.onrender.com/api';
+    ? 'http://localhost:5000/api'
+    : 'https://aiml-1-credit.onrender.com/api';
 
 // 🔥 CART STORAGE
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -184,11 +184,128 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 🔥 PAGE LOAD
-if (window.location.pathname.includes('products.html')) {
-    loadProducts();
+// 🔥 AUTH FUNCTIONS
+async function registerUser(name, email, password) {
+    try {
+        const res = await fetch(`${API_BASE}/users/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data));
+            alert('Registered! Welcome ' + data.name);
+            window.location.href = 'products.html';
+        } else {
+            alert(data.message || 'Registration failed');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
 }
 
-if (window.location.pathname.includes('cart.html')) {
-    loadCart();
+async function loginUser(email, password) {
+    try {
+        const res = await fetch(`${API_BASE}/users/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data));
+            alert('Logged in! Welcome back ' + data.name);
+            window.location.href = 'products.html';
+        } else {
+            alert(data.message || 'Login failed');
+        }
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
 }
+
+// 🔥 AUTH FORM HANDLERS
+document.addEventListener('DOMContentLoaded', () => {
+    // Existing checkout
+    const checkoutForm = document.getElementById('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const orderItems = await getProductDetailsFromCart();
+            const total = orderItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+            const token = localStorage.getItem('token');
+            if (!token) return alert('Please login first');
+
+            const orderData = {
+                orderItems,
+                shippingAddress: {
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    postalCode: document.getElementById('postalCode').value,
+                    country: document.getElementById('country').value,
+                },
+                paymentMethod: document.getElementById('paymentMethod').value,
+                itemsPrice: total,
+                taxPrice: 0,
+                shippingPrice: 0,
+                totalPrice: total,
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (res.ok) {
+                    alert('Order placed! 🎉');
+                    localStorage.removeItem('cart');
+                    window.location.href = 'products.html';
+                } else {
+                    alert('Order failed');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        });
+    }
+
+    // Login form
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            loginUser(email, password);
+        });
+    }
+
+    // Register form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            registerUser(name, email, password);
+        });
+    }
+
+    // Page load
+    if (window.location.pathname.includes('products.html')) {
+        loadProducts();
+    }
+
+    if (window.location.pathname.includes('cart.html')) {
+        loadCart();
+    }
+});
