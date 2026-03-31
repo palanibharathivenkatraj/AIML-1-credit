@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - E-Commerce Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>E-Commerce Shop</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="products.html">Products</a>
+      <a href="cart.html">Cart</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+    </nav>
+  </header>
+  <main>
+    <h2>Products</h2>
+    <div class="category-menu">
+      <button class="category-btn active" onclick="filterCategory('All')">All</button>
+      <button class="category-btn" onclick="filterCategory('Boys')">Boys</button>
+      <button class="category-btn" onclick="filterCategory('Girls')">Girls</button>
+    </div>
+    <div id="products-container" class="product-grid"></div>
+  </main>
+  <footer>
+    <p>&copy; 2026 e commerce shop</p>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
