@@ -1,4 +1,6 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = window.location.host.includes('localhost')
+  ? 'http://localhost:5000/api'
+  : 'https://aiml-1-credit.onrender.com/api';
 
 // 🔥 CART STORAGE
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
